@@ -2,6 +2,7 @@ _schema-version: 3.3.0
 ID: cpi-utility-hub
 description: A simple CAP project.
 version: 1.0.0
+
 modules:
 - name: cpi-utility-hub-srv
   type: nodejs
@@ -10,7 +11,6 @@ modules:
   - name: cpi-utility-hub-auth
   - name: cpi-utility-hub-connectivity
   - name: cpi-utility-hub-destination
-  - name: cpi-utility-hub-logging
   provides:
   - name: srv-api
     properties:
@@ -20,6 +20,7 @@ modules:
     instances: 1
   build-parameters:
     builder: npm-ci
+
 - name: cpi-utility-hub
   type: approuter.nodejs
   path: app/router
@@ -33,7 +34,6 @@ modules:
   - name: cpi-utility-hub-auth
   - name: cpi-utility-hub-destination
   - name: cpi-utility-hub-html5-runtime
-  - name: cpi-utility-hub-logging
   provides:
   - name: app-api
     properties:
@@ -43,6 +43,7 @@ modules:
     disk-quota: 256M
     keep-existing-routes: true
     memory: 256M
+
 - name: cpi-utility-hub-app-deployer
   type: com.sap.application.content
   path: gen
@@ -61,6 +62,7 @@ modules:
       - comcpiutilitycpiutilityui.zip
       name: comcpiutilitycpiutilityui
       target-path: app/
+
 - name: comcpiutilitycpiutilityui
   type: html5
   path: app/cpiutilityui
@@ -71,6 +73,7 @@ modules:
     - npm install
     - npm run build:cf
     supported-platforms: []
+
 resources:
 - name: cpi-utility-hub-auth
   type: org.cloudfoundry.managed-service
@@ -89,11 +92,13 @@ resources:
     service-plan: application
   requires:
   - name: app-api
+
 - name: cpi-utility-hub-connectivity
   type: org.cloudfoundry.managed-service
   parameters:
     service: connectivity
     service-plan: lite
+
 - name: cpi-utility-hub-destination
   type: org.cloudfoundry.managed-service
   parameters:
@@ -110,24 +115,23 @@ resources:
           existing_destinations_policy: update
     service: destination
     service-plan: lite
+
 - name: cpi-utility-hub-html5-repo-host
   type: org.cloudfoundry.managed-service
   parameters:
     service: html5-apps-repo
     service-plan: app-host
+
 - name: cpi-utility-hub-html5-runtime
   type: org.cloudfoundry.managed-service
   parameters:
     service: html5-apps-repo
     service-plan: app-runtime
-- name: cpi-utility-hub-logging
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: application-logs
-    service-plan: standard
+
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
+
 build-parameters:
   before-all:
   - builder: custom
