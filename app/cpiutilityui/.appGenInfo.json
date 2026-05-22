@@ -1,0 +1,23 @@
+{
+  "generationParameters": {
+    "generationDate": "Tue May 19 2026 16:47:45 GMT+0000 (Coordinated Universal Time)",
+    "generatorPlatform": "SAP Business Application Studio",
+    "serviceType": "Local CAP",
+    "metadataFilename": "",
+    "serviceUrl": "http://localhost:4004/api/artifact/",
+    "appName": "cpiutilityui",
+    "appTitle": "CPI Utility Hub",
+    "appDescription": "SAP CPI artifact rename utility",
+    "appNamespace": "com.cpi.utility",
+    "ui5Theme": "sap_horizon",
+    "ui5Version": "1.148.0",
+    "enableEslint": true,
+    "enableTypeScript": false,
+    "showMockDataInfo": false,
+    "generatorVersion": "1.24.0",
+    "template": "Basic V4",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [],
+    "launchText": "To launch the generated app, start your CAP project:  and navigate to the following location in your browser:\n\nhttp://localhost:4004/cpiutilityui/webapp/index.html"
+  }
+}

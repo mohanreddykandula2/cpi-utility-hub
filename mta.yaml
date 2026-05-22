@@ -1,0 +1,136 @@
+_schema-version: 3.3.0
+ID: cpi-utility-hub
+description: A simple CAP project.
+version: 1.0.0
+modules:
+- name: cpi-utility-hub-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: cpi-utility-hub-auth
+  - name: cpi-utility-hub-connectivity
+  - name: cpi-utility-hub-destination
+  - name: cpi-utility-hub-logging
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+    instances: 1
+  build-parameters:
+    builder: npm-ci
+- name: cpi-utility-hub
+  type: approuter.nodejs
+  path: app/router
+  requires:
+  - name: srv-api
+    group: destinations
+    properties:
+      forwardAuthToken: true
+      name: srv-api
+      url: ~{srv-url}
+  - name: cpi-utility-hub-auth
+  - name: cpi-utility-hub-destination
+  - name: cpi-utility-hub-html5-runtime
+  - name: cpi-utility-hub-logging
+  provides:
+  - name: app-api
+    properties:
+      app-protocol: ${protocol}
+      app-uri: ${default-uri}
+  parameters:
+    disk-quota: 256M
+    keep-existing-routes: true
+    memory: 256M
+- name: cpi-utility-hub-app-deployer
+  type: com.sap.application.content
+  path: gen
+  requires:
+  - name: cpi-utility-hub-auth
+  - name: srv-api
+  - name: cpi-utility-hub-html5-repo-host
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+      content-target: true
+  build-parameters:
+    build-result: app/
+    requires:
+    - artifacts:
+      - comcpiutilitycpiutilityui.zip
+      name: comcpiutilitycpiutilityui
+      target-path: app/
+- name: comcpiutilitycpiutilityui
+  type: html5
+  path: app/cpiutilityui
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: cpi-utility-hub-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      oauth2-configuration:
+        credential-types:
+        - binding-secret
+        - x509
+        redirect-uris:
+        - https://*~{app-api/app-uri}/**
+      tenant-mode: dedicated
+      xsappname: cpi-utility-hub-${org}-${space}
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+  requires:
+  - name: app-api
+- name: cpi-utility-hub-connectivity
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: connectivity
+    service-plan: lite
+- name: cpi-utility-hub-destination
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: false
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+    service: destination
+    service-plan: lite
+- name: cpi-utility-hub-html5-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-host
+- name: cpi-utility-hub-html5-runtime
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-runtime
+- name: cpi-utility-hub-logging
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: application-logs
+    service-plan: standard
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm ci
+    - npx cds build --production

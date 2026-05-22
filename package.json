@@ -1,0 +1,41 @@
+{
+  "name": "cpi-utility-hub",
+  "version": "1.0.0",
+  "dependencies": {
+    "@sap-cloud-sdk/connectivity": "^4.6.0",
+    "@sap-cloud-sdk/http-client": "^4.6.0",
+    "@sap/cds": "^9",
+    "@sap/xssec": "^4",
+    "axios": "^1.16.1",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.4",
+    "@sap/cds-dk": "^9",
+    "cds-plugin-ui5": "^0.13.0",
+    "mbt": "^1.2.29",
+    "rimraf": "^5.0.5"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch-cpiutilityui": "cds watch --open com.cpi.utility.cpiutilityui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "undeploy": "cf undeploy cpi-utility-hub --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "[production]": {
+        "auth": "xsuaa"
+      },
+      "connectivity": true,
+      "destinations": true,
+      "html5-repo": true,
+      "application-logging": true
+    }
+  },
+  "workspaces": [
+    "app/*"
+  ]
+}

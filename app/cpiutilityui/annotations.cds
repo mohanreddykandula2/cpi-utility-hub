@@ -1,0 +1,1 @@
+using ArtifactService as service from '../../srv/artifact-service';

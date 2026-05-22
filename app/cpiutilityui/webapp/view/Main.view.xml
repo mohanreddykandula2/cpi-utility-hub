@@ -1,0 +1,123 @@
+<mvc:View
+  id="mainView"
+  controllerName="com.cpi.utility.cpiutilityui.controller.Main"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:u="sap.ui.unified">
+
+  <Page id="mainPage" title="CPI Utility Hub">
+    <content>
+      <VBox id="mainContainer" class="sapUiMediumMargin" width="100%">
+
+        <Panel
+          id="cpiDownloadPanel"
+          headerText="Download From SAP CPI"
+          expandable="false"
+          class="sapUiResponsiveMargin"
+          width="auto">
+          <VBox id="cpiDownloadContainer" class="sapUiSmallMargin">
+            <Label id="iflowIdLabel" text="iFlow ID" labelFor="iflowIdInput" />
+            <Input
+              id="iflowIdInput"
+              value="{/iflowId}"
+              valueLiveUpdate="true"
+              placeholder="Enter CPI iFlow technical ID"
+              liveChange=".onIflowIdChanged" />
+            <Toolbar id="cpiDownloadToolbar">
+              <Button
+                id="downloadFromCpiButton"
+                text="Download From CPI"
+                type="Emphasized"
+                press=".onDownloadFromCpi"
+                enabled="{/canDownloadFromCpi}" />
+            </Toolbar>
+          </VBox>
+        </Panel>
+
+        <Panel
+          id="uploadPanel"
+          headerText="Artifact Upload"
+          expandable="false"
+          class="sapUiResponsiveMargin"
+          width="auto">
+          <VBox id="uploadContainer" class="sapUiSmallMargin">
+            <Text
+              id="uploadHelpText"
+              text="Upload an exported SAP CPI iFlow ZIP to analyze scripts and generate a renamed artifact." />
+
+            <u:FileUploader
+              id="artifactUploader"
+              width="100%"
+              fileType="zip"
+              sameFilenameAllowed="true"
+              change=".onFileSelected"
+              placeholder="Choose SAP CPI iFlow ZIP" />
+
+            <Toolbar id="actionToolbar">
+              <Button
+                id="analyzeButton"
+                text="Analyze Artifact"
+                type="Emphasized"
+                press=".onAnalyzeArtifact"
+                enabled="{/hasFile}" />
+              <Button
+                id="generateButton"
+                text="Generate Modified ZIP"
+                press=".onGenerateArtifact"
+                enabled="{/canGenerate}" />
+                <Button
+                id="deployToCpiButton"
+                text="Deploy to CPI"
+                type="Accept"
+                press=".onDeployToCpi"
+                enabled="{/canDeployToCpi}" />
+            </Toolbar>
+          </VBox>
+        </Panel>
+
+        <Panel
+          id="scriptsPanel"
+          headerText="Scripts"
+          class="sapUiResponsiveMargin"
+          width="auto">
+          <Table
+            id="scriptsTable"
+            items="{/scripts}"
+            growing="true">
+            <columns>
+              <Column id="originalScriptColumn">
+                <Text id="originalScriptColumnText" text="Original Script" />
+              </Column>
+              <Column id="stepNamesColumn">
+                <Text id="stepNamesColumnText" text="Step Names" />
+              </Column>
+              <Column id="newScriptNameColumn">
+                <Text id="newScriptNameColumnText" text="New Script Name" />
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem id="scriptRow">
+                <cells>
+                  <ObjectIdentifier
+                    id="scriptObjectIdentifier"
+                    title="{originalName}"
+                    text="{originalPath}" />
+                  <Text
+                    id="stepNamesText"
+                    text="{path: 'stepNames', formatter: '.formatStepNames'}" />
+                  <Input
+                    id="newScriptNameInput"
+                    value="{newName}"
+                    valueState="{valueState}"
+                    valueStateText="{valueStateText}"
+                    liveChange=".onScriptNameChanged" />
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </Panel>
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>
