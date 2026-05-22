@@ -1,0 +1,2 @@
+sap.ui.define(["sap/ui/core/UIComponent","com/cpi/utility/cpiutilityui/model/models"],(i,t)=>{"use strict";return i.extend("com.cpi.utility.cpiutilityui.Component",{metadata:{manifest:"json",interfaces:["sap.ui.core.IAsyncContentCreation"]},init(){i.prototype.init.apply(this,arguments);this.setModel(t.createDeviceModel(),"device");this.getRouter().initialize()}})});
+//# sourceMappingURL=Component.js.map

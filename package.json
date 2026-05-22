@@ -6,6 +6,7 @@
     "@sap-cloud-sdk/http-client": "^4.6.0",
     "@sap/cds": "^9",
     "@sap/xssec": "^4",
+    "@xmldom/xmldom": "^0.9.10",
     "axios": "^1.16.1",
     "jszip": "^3.10.1"
   },

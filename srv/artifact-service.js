@@ -1,5 +1,6 @@
 const cds = require('@sap/cds');
 const JSZip = require('jszip');
+const { DOMParser } = require("@xmldom/xmldom");
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 
 const CPI_DESTINATION = 'CPI_DESIGNTIME_API';
@@ -73,11 +74,73 @@ function validateRenames(renames) {
 
   return '';
 }
+async function extractScriptStepMap(zip) {
+  const scriptToStepMap = {};
 
+  const iflwFiles = Object.values(zip.files).filter(file =>
+    !file.dir &&
+    file.name.startsWith("src/main/resources/scenarioflows/integrationflow/") &&
+    file.name.endsWith(".iflw")
+  );
+
+  for (const iflwFile of iflwFiles) {
+    const xmlContent = await iflwFile.async("string");
+    const xmlDoc = new DOMParser().parseFromString(xmlContent, "application/xml");
+    const allElements = xmlDoc.getElementsByTagName("*");
+
+    for (let i = 0; i < allElements.length; i++) {
+      const element = allElements[i];
+      const tagName = String(element.localName || element.tagName || "").toLowerCase();
+
+      if (tagName !== "value") {
+        continue;
+      }
+
+      const scriptPath = String(element.textContent || "").trim();
+
+      if (!/\.(groovy|js)$/i.test(scriptPath)) {
+        continue;
+      }
+
+      const scriptFile = scriptPath.split("/").pop();
+      let current = element.parentNode;
+      let stepName = "";
+
+      while (current && current.nodeType === 1) {
+        const currentTag = String(current.localName || current.tagName || "").toLowerCase();
+
+        if (
+          currentTag.includes("process") ||
+          currentTag.includes("collaboration") ||
+          currentTag.includes("participant")
+        ) {
+          break;
+        }
+
+        if (current.getAttribute && current.getAttribute("name")) {
+          stepName = current.getAttribute("name");
+          break;
+        }
+
+        current = current.parentNode;
+      }
+
+      if (scriptFile && stepName) {
+        scriptToStepMap[scriptFile] = scriptToStepMap[scriptFile] || [];
+
+        if (!scriptToStepMap[scriptFile].includes(stepName)) {
+          scriptToStepMap[scriptFile].push(stepName);
+        }
+      }
+    }
+  }
+
+  return scriptToStepMap;
+}
 async function analyzeZip(fileName, zipBase64) {
   const zipBuffer = Buffer.from(zipBase64, 'base64');
   const loadedZip = await JSZip.loadAsync(zipBuffer);
-  const scriptToStepMap = {};
+  const scriptToStepMap = await extractScriptStepMap(loadedZip);
 
   const iflwFiles = Object.values(loadedZip.files).filter(
     file =>
@@ -122,11 +185,15 @@ async function analyzeZip(fileName, zipBase64) {
     if (!zipEntry.dir && relativePath.startsWith('src/main/resources/script/')) {
       const originalName = relativePath.split('/').pop();
 
+      const stepNames = scriptToStepMap[originalName] || [];
+
       scripts.push({
         originalPath: relativePath,
         originalName,
         newName: originalName,
-        stepNames: scriptToStepMap[originalName] || [],
+        stepNames,
+        used: stepNames.length > 0,
+        usageStatus: stepNames.length > 0 ? "Used" : "Unused"
       });
     }
   });
@@ -225,7 +292,7 @@ async function downloadFromCpi(iflowId) {
   };
 }
 
-async function deployToCpi(iflowId, zipBase64) {
+async function deployToCpi(iflowId, zipBase64, comment) {
   const endpoint = `/IntegrationDesigntimeArtifacts(Id='${odataString(iflowId)}',Version='active')`;
 
   let csrfToken = '';
@@ -340,15 +407,16 @@ module.exports = cds.service.impl(function () {
   });
 
   this.on('deployToCpi', async req => {
-    const { iflowId, zipBase64 } = req.data;
+    const { iflowId, zipBase64, comment } = req.data;
 
     if (!iflowId || !zipBase64) {
       return req.reject(400, 'iFlow ID and zipBase64 are required.');
     }
 
     try {
-      return await deployToCpi(iflowId, zipBase64);
-     } catch (error) {
+      console.log('Deploy comment:', comment || 'No comment provided');
+      return await deployToCpi(iflowId, zipBase64, comment);
+    } catch (error) {
       console.error('downloadFromCpi failed', {
         message: error.message,
         status: error?.response?.status,

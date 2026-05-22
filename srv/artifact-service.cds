@@ -6,6 +6,8 @@ service ArtifactService @(path: '/api/artifact') {
     originalName : String;
     newName      : String;
     stepNames    : many String;
+    used        : Boolean;
+    usageStatus : String;
   }
 
   type AnalyzeResult {
@@ -32,5 +34,5 @@ service ArtifactService @(path: '/api/artifact') {
   action analyzeArtifact(fileName: String, zipBase64: LargeString) returns AnalyzeResult;
   action generateArtifact(fileName: String, zipBase64: LargeString, renames: many RenameItem) returns GenerateResult;
   action downloadFromCpi(iflowId: String) returns GenerateResult;
-  action deployToCpi(iflowId: String, zipBase64: LargeString) returns DeployResult;
+  action deployToCpi(iflowId: String, zipBase64: LargeString, comment: String) returns DeployResult;
 }
