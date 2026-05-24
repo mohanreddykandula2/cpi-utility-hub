@@ -1,11 +1,25 @@
 {
+  "welcomeFile": "/cpiutilityui/webapp/",
+  "authenticationMethod": "route",
   "routes": [
     {
-      "source": "^/(.*)$",
-      "target": "$1",
+      "source": "^/api/(.*)$",
+      "target": "/api/$1",
       "destination": "srv-api",
-      "csrfProtection": true
+      "authenticationType": "xsuaa",
+      "csrfProtection": false
+    },
+    {
+      "source": "^/cpiutilityui/(.*)$",
+      "target": "/cpiutilityui/$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "source": "^/(.*)$",
+      "target": "/cpiutilityui/webapp/$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa"
     }
-  ],
-  "welcomeFile": "/comcpiutilitycpiutilityui"
+  ]
 }
