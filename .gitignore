@@ -2,6 +2,8 @@ node_modules/
 target/
 _out/
 gen/
+.gen/
+app/*/dist/
 
 .cdsrc-private.json
 default-*.json
@@ -11,6 +13,11 @@ default-*.json
 mta_archives/
 *_mta_build_tmp
 *.mtar
+*.zip
+*.b64
+test-request.json
+*-request.json
+*-response.json
 
 # Other
 .DS_Store
